@@ -1,0 +1,40 @@
+Software Engineer — Full Stack (Mid-Level)
+Acme Technology Group | Remote (US)
+
+About the Role
+We are looking for a motivated Software Engineer to join our growing platform team.
+You will design, build, and maintain scalable backend services and contribute to
+our React-based frontend application.
+
+Responsibilities
+- Design and implement RESTful APIs using Python (FastAPI or Django)
+- Write clean, testable, well-documented code
+- Collaborate with product and design on new features
+- Participate in code reviews and architectural discussions
+- Monitor, troubleshoot, and optimise production services
+
+Required Qualifications
+- 3+ years of professional software engineering experience
+- Proficiency in Python — FastAPI, Django, or Flask
+- Strong knowledge of SQL databases (PostgreSQL preferred)
+- Experience with Docker and containerised deployments
+- Familiarity with CI/CD pipelines (GitHub Actions, CircleCI, or similar)
+- Must have experience with cloud platforms (AWS, GCP, or Azure)
+
+Preferred Qualifications
+- Experience with Kubernetes and container orchestration
+- Familiarity with TypeScript and React
+- Exposure to message queues (Kafka, RabbitMQ, or SQS)
+- Knowledge of Infrastructure-as-Code tools (Terraform, CDK)
+
+Nice to Have
+- Open-source contributions
+- Experience with data pipelines or ML platforms
+- Background in agile/scrum environments
+
+What We Offer
+- Competitive salary ($120 000 – $160 000)
+- Remote-first culture
+- Generous equity package
+- Health, dental, and vision insurance
+- Annual learning & development budget
