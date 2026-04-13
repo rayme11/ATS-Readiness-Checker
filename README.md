@@ -224,7 +224,19 @@ ollama pull llama3.2      # newer, more capable
 ollama pull gemma2        # Google's open model
 ```
 
-**Step 4 — Enable Ollama in ATS Insight**
+**Step 4 — Start the app**
+
+Open a new terminal, navigate to the project folder, activate the virtual environment, and launch Streamlit:
+
+```bash
+cd ATS-Readiness-Checker
+source .venv/bin/activate
+streamlit run app/main.py
+```
+
+Streamlit will print a local URL (usually `http://localhost:8501`). Open it in your browser.
+
+**Step 5 — Enable Ollama in ATS Insight**
 
 Open the **AI Settings** tab in the app, select **Ollama — Free & Local**,
 then click **Test Connection** to confirm it's working.

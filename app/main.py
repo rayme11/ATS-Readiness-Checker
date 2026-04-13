@@ -5,8 +5,16 @@ Run with:
     streamlit run app/main.py
 """
 
+import logging
 import os
 import sys
+
+# ── Logging configuration — shows in the terminal that runs `streamlit run` —
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(levelname)-8s  %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 # Ensure the project root is importable as a package root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

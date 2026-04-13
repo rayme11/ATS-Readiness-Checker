@@ -28,9 +28,13 @@ They are accepted at construction time, used in-memory, and discarded.
 Use get_llm_client() to obtain the right client based on provider name.
 """
 
+import logging
+import time
 from typing import Optional
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 
 class OllamaClient:
@@ -46,10 +50,19 @@ class OllamaClient:
 
     def is_available(self) -> bool:
         """Return True if Ollama is reachable at base_url."""
+        logger.info("[Ollama] Checking availability at %s", self.base_url)
         try:
             resp = requests.get(f"{self.base_url}/api/tags", timeout=3)
-            return resp.status_code == 200
-        except (requests.ConnectionError, requests.Timeout):
+            if resp.status_code == 200:
+                logger.info("[Ollama] Server is reachable")
+                return True
+            logger.warning("[Ollama] Unexpected status %s", resp.status_code)
+            return False
+        except requests.ConnectionError:
+            logger.warning("[Ollama] Connection refused — is `ollama serve` running?")
+            return False
+        except requests.Timeout:
+            logger.warning("[Ollama] Connection timed out after 3 s")
             return False
 
     def list_models(self) -> list[str]:
@@ -65,6 +78,10 @@ class OllamaClient:
 
     def chat(self, prompt: str, system: Optional[str] = None) -> str:
         """Send a chat completion request and return the response text."""
+        logger.info(
+            "[Ollama] → POST %s/api/chat  model=%s  prompt_chars=%d",
+            self.base_url, self.model, len(prompt),
+        )
         messages: list[dict] = []
         if system:
             messages.append({"role": "system", "content": system})
@@ -72,13 +89,20 @@ class OllamaClient:
 
         payload = {"model": self.model, "messages": messages, "stream": False}
 
+        t0 = time.perf_counter()
         resp = requests.post(
             f"{self.base_url}/api/chat",
             json=payload,
             timeout=120,
         )
+        elapsed = time.perf_counter() - t0
         resp.raise_for_status()
-        return resp.json()["message"]["content"]
+        result = resp.json()["message"]["content"]
+        logger.info(
+            "[Ollama] ← response received  elapsed=%.1fs  response_chars=%d",
+            elapsed, len(result),
+        )
+        return result
 
 
 class OpenAIClient:
@@ -99,6 +123,7 @@ class OpenAIClient:
         """Send a chat completion request and return the response text."""
         from openai import OpenAI  # lazy import keeps startup fast
 
+        logger.info("[OpenAI] → request  model=%s  prompt_chars=%d", self.model, len(prompt))
         client = OpenAI(api_key=self.api_key)
 
         messages: list[dict] = []
@@ -106,13 +131,24 @@ class OpenAIClient:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
 
+        t0 = time.perf_counter()
         response = client.chat.completions.create(
             model=self.model,
             messages=messages,
             max_tokens=1500,
             temperature=0.4,
         )
-        return response.choices[0].message.content
+        elapsed = time.perf_counter() - t0
+        usage = response.usage
+        result = response.choices[0].message.content
+        logger.info(
+            "[OpenAI] ← response  elapsed=%.1fs  prompt_tokens=%s  completion_tokens=%s  response_chars=%d",
+            elapsed,
+            usage.prompt_tokens if usage else "?",
+            usage.completion_tokens if usage else "?",
+            len(result) if result else 0,
+        )
+        return result
 
 
 class GroqClient:
@@ -137,6 +173,7 @@ class GroqClient:
         """Send a chat completion request and return the response text."""
         from openai import OpenAI  # reuse openai SDK — Groq is OpenAI-compatible
 
+        logger.info("[Groq] → request  model=%s  prompt_chars=%d", self.model, len(prompt))
         client = OpenAI(
             api_key=self.api_key,
             base_url="https://api.groq.com/openai/v1",
@@ -146,15 +183,26 @@ class GroqClient:
             messages.append({"role": "system", "content": system})
         messages.append({"role": "user", "content": prompt})
 
+        t0 = time.perf_counter()
         response = client.chat.completions.create(
             model=self.model,
             messages=messages,
             max_tokens=1500,
             temperature=0.4,
         )
+        elapsed = time.perf_counter() - t0
+        usage = response.usage
         if not response.choices:
+            logger.warning("[Groq] ← empty response  elapsed=%.1fs", elapsed)
             return ""
         content = response.choices[0].message.content
+        logger.info(
+            "[Groq] ← response  elapsed=%.1fs  prompt_tokens=%s  completion_tokens=%s  response_chars=%d",
+            elapsed,
+            usage.prompt_tokens if usage else "?",
+            usage.completion_tokens if usage else "?",
+            len(content) if isinstance(content, str) else 0,
+        )
         return content if isinstance(content, str) else ""
 
 
@@ -179,21 +227,28 @@ class AnthropicClient:
         """Send a chat completion request and return the response text."""
         from anthropic import Anthropic  # lazy import — anthropic package optional
 
+        logger.info("[Anthropic] → request  model=%s  prompt_chars=%d", self.model, len(prompt))
         client = Anthropic(api_key=self.api_key)
         kwargs: dict = {
             "model": self.model,
             "max_tokens": 1500,
             "messages": [{"role": "user", "content": prompt}],
         }
-        content = getattr(response, "content", None)
-        if not content:
-            return ""
-        first_block = content[0]
-        text = getattr(first_block, "text", None)
-        return text if text is not None else ""
+        if system:
             kwargs["system"] = system
+        t0 = time.perf_counter()
         response = client.messages.create(**kwargs)
-        return response.content[0].text
+        elapsed = time.perf_counter() - t0
+        usage = getattr(response, "usage", None)
+        result = response.content[0].text
+        logger.info(
+            "[Anthropic] ← response  elapsed=%.1fs  input_tokens=%s  output_tokens=%s  response_chars=%d",
+            elapsed,
+            getattr(usage, "input_tokens", "?") if usage else "?",
+            getattr(usage, "output_tokens", "?") if usage else "?",
+            len(result),
+        )
+        return result
 
 
 def get_llm_client(
