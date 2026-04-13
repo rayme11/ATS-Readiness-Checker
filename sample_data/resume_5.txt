@@ -1,0 +1,12 @@
+Alex Turner
+DevOps Engineer
+
+Summary:
+DevOps specialist focused on CI/CD, cloud infrastructure, and automation.
+
+Experience:
+- Company A: Delivered impactful work
+- Company B: Led initiatives
+
+Skills:
+Python, Java, AWS

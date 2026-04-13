@@ -467,6 +467,45 @@ ATS-Readiness-Checker/          ← repo root (you are here)
 
 ---
 
+## Security
+
+Every commit is verified against the following checks before merging.
+
+### Tools & What They Cover
+
+| Tool | What it checks | Last result |
+|---|---|---|
+| **Bandit** | Static analysis of Python source — injection risks, unsafe calls, silent exception swallowing, hardcoded secrets | ✅ 0 issues |
+| **pip-audit** | All installed packages against NIST NVD + PyPI advisory databases for known CVEs | ✅ 0 vulnerabilities |
+| **Manual grep** | Source code scanned for `subprocess`, `os.system`, `eval`, `exec`, hardcoded API key patterns (`sk-`, `gsk_`) | ✅ 0 findings |
+| **git ls-files** | Confirms `.env` (real keys) is never tracked in version control | ✅ Not tracked |
+| **XSS review** | Any user-supplied data (resume text, JD keywords) rendered via `unsafe_allow_html` is escaped with `html.escape()` | ✅ All escaped |
+
+### How to Run Locally
+
+```bash
+source .venv/bin/activate
+
+# Static security analysis
+bandit -r app/ -f txt -q
+
+# Dependency CVE scan
+pip-audit
+
+# All tests
+pytest tests/ -v
+```
+
+### Security Design Principles
+
+- **No data leaves your machine** unless you explicitly choose a cloud AI provider (Groq, OpenAI, Anthropic) in AI Settings
+- **API keys** are stored in session state only (memory) or locally in `.env` — never logged or persisted to disk by the app
+- **No shell execution** — no `subprocess`, `os.system`, `eval`, or `exec` anywhere in the codebase
+- **File parsing** is done entirely in-memory (`io.BytesIO`) — no user-uploaded bytes are written to disk
+- **User content in HTML** is HTML-escaped before rendering to prevent XSS
+
+---
+
 ## Build Status
 
 | Phase | Status | Description |

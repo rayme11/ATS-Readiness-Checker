@@ -72,8 +72,8 @@ class OllamaClient:
             if resp.status_code == 200:
                 data = resp.json()
                 return [m["name"] for m in data.get("models", [])]
-        except Exception:
-            pass
+        except Exception as exc:  # network error, Ollama not running, etc.
+            logger.debug("[Ollama] list_models failed: %s", exc)
         return []
 
     # Models can take a long time to load on first use (weights loaded into RAM/VRAM).

@@ -1,0 +1,12 @@
+Maria Lopez
+Software Engineer
+
+Summary:
+Full-stack developer with expertise in React, Node.js, and cloud platforms.
+
+Experience:
+- Company A: Delivered impactful work
+- Company B: Led initiatives
+
+Skills:
+Python, Java, AWS

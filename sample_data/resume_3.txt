@@ -1,0 +1,12 @@
+David Kim
+Engineering Manager
+
+Summary:
+Leader with experience scaling teams and driving quality engineering practices.
+
+Experience:
+- Company A: Delivered impactful work
+- Company B: Led initiatives
+
+Skills:
+Python, Java, AWS
