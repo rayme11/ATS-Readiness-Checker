@@ -1,5 +1,5 @@
 """
-"""
+
 LLM client abstraction layer.
 
 Four backends are supported:
@@ -152,7 +152,10 @@ class GroqClient:
             max_tokens=1500,
             temperature=0.4,
         )
-        return response.choices[0].message.content
+        if not response.choices:
+            return ""
+        content = response.choices[0].message.content
+        return content if isinstance(content, str) else ""
 
 
 class AnthropicClient:
@@ -182,7 +185,12 @@ class AnthropicClient:
             "max_tokens": 1500,
             "messages": [{"role": "user", "content": prompt}],
         }
-        if system:
+        content = getattr(response, "content", None)
+        if not content:
+            return ""
+        first_block = content[0]
+        text = getattr(first_block, "text", None)
+        return text if text is not None else ""
             kwargs["system"] = system
         response = client.messages.create(**kwargs)
         return response.content[0].text

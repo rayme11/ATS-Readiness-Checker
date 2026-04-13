@@ -17,7 +17,7 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
 | Mode | Cost | Local run | Hosted / online | Requirements |
 |---|---|---|---|---|
 | **None (Rule-based)** | Free | ✅ | ✅ | Nothing extra |
-| **Ollama (Local AI)** | Free | ✅ | ❌ local server only | [Ollama](https://ollama.ai) installed & running |
+| **Ollama (Local AI)** | Free | ✅ | ❌ | [Ollama](https://ollama.ai) installed & running |
 | **Groq (Free Tier)** | Free | ✅ | ✅ | Free key from [console.groq.com](https://console.groq.com) |
 | **OpenAI** | Pay-per-use | ✅ | ✅ | Your own [OpenAI key](https://platform.openai.com/api-keys) |
 | **Anthropic Claude** | Pay-per-use | ✅ | ✅ | Your own [Anthropic key](https://console.anthropic.com) |
