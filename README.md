@@ -8,6 +8,19 @@ It runs **100 % locally on your machine** — no account required, no data sent 
 
 Built and maintained by [Ray Maldonado](https://www.linkedin.com/in/rmaldonado)
 
+> **Educational project.** This tool was built from scratch — idea to running app —
+> to explore what an ATS readiness checker looks like under the hood, and how modern
+> LLM models can be layered on top of rule-based analysis. See the
+> [Disclaimer & Context](#disclaimer--context) section for the full story.
+
+---
+
+## Preview
+
+![ATS Readiness Report — score card, category breakdown, strengths and risks](docs/pics/report-preview.png)
+
+*Score card · Category breakdown · Strengths & risks · AI feedback panel*
+
 ---
 
 ## What It Does
@@ -23,7 +36,8 @@ Upload a resume (PDF, DOCX, or TXT), optionally paste a job description, and rec
 | **Achievement Quality** | Checks for metrics and action verbs |
 | **Recruiter Readability** | Location, bullet consistency, line length |
 | **Recommendations** | Prioritised, practical improvement list |
-| **AI Feedback** | Optional deeper narrative (Ollama or OpenAI) |
+| **AI Feedback** | Optional deeper narrative (Ollama, Groq, OpenAI, or Anthropic) |
+| **LLM Suitability Panel** | Rates the active AI engine across 5 dimensions; compares all providers |
 
 ---
 
@@ -84,6 +98,10 @@ flowchart TD
     Parser -.->|uses| RM
     Scorer -.->|uses| SM
 ```
+
+> **Five AI providers** are supported: None (rule-based), Ollama (local), Groq (free cloud),
+> OpenAI (BYOK), and Anthropic Claude (BYOK). The architecture diagram above shows the
+> canonical three — the full provider list is in the AI Modes table below.
 
 > **Solid arrows** = data / control flow.  
 > **Dashed arrows** = module dependency (uses a data model).  
@@ -224,7 +242,19 @@ ollama pull llama3.2      # newer, more capable
 ollama pull gemma2        # Google's open model
 ```
 
-**Step 4 — Enable Ollama in ATS Insight**
+**Step 4 — Start the app**
+
+Open a new terminal, navigate to the project folder, activate the virtual environment, and launch Streamlit:
+
+```bash
+cd ATS-Readiness-Checker
+source .venv/bin/activate
+streamlit run app/main.py
+```
+
+Streamlit will print a local URL (usually `http://localhost:8501`). Open it in your browser.
+
+**Step 5 — Enable Ollama in ATS Insight**
 
 Open the **AI Settings** tab in the app, select **Ollama — Free & Local**,
 then click **Test Connection** to confirm it's working.
@@ -274,13 +304,13 @@ generous enough for typical resume analysis use.
 # .env  (local development convenience)
 AI_PROVIDER=groq
 GROQ_API_KEY=gsk_...
-GROQ_MODEL=llama3-8b-8192
+GROQ_MODEL=llama-3.1-8b-instant
 ```
 
 Available free models:
 | Model | Best for |
 |---|---|
-| `llama3-8b-8192` | Fast, good quality (recommended) |
+| `llama-3.1-8b-instant` | Fast, good quality (recommended) |
 | `llama3-70b-8192` | Higher quality, slightly slower |
 | `mixtral-8x7b-32768` | Long context windows |
 | `gemma2-9b-it` | Google's open model |
@@ -398,6 +428,10 @@ ATS-Readiness-Checker/          ← repo root (you are here)
 │   └── test_keyword_matcher.py
 ├── sample_data/
 │   └── sample_jd.txt         ← Example job description for testing
+├── .streamlit/
+│   └── config.toml           ← Auto-reload on save + poll-watcher settings
+├── .vscode/
+│   └── tasks.json            ← Cmd+Shift+B launches the app
 ├── .env.example              ← Copy to .env and fill in
 ├── .venv/                    ← Virtual environment (gitignored)
 ├── requirements.txt
@@ -421,12 +455,54 @@ ATS-Readiness-Checker/          ← repo root (you are here)
 
 ## Honest Limitations
 
-- Resume parsing works best on **single-column, text-based PDFs**.  
-  Scanned / image PDFs will return empty or garbled text.
+- **Multi-column PDFs** are handled by column-aware layout analysis, but very complex
+  designs (3+ columns, heavy graphics, scanned/image PDFs) may still extract imperfectly.
+  Plain single-column PDFs give the cleanest results.
 - ATS systems vary widely — this tool simulates common patterns, not every platform.
 - Keyword matching is heuristic. It does not replicate any specific recruiter software.
 - AI feedback quality depends on the model you choose. Ollama models may be less
   polished than GPT-4o but are completely free.
+- Ollama first-run responses can take 30–120 s while the model loads into memory.
+  Subsequent requests in the same session are faster.
+
+---
+
+## Security
+
+Every commit is verified against the following checks before merging.
+
+### Tools & What They Cover
+
+| Tool | What it checks | Last result |
+|---|---|---|
+| **Bandit** | Static analysis of Python source — injection risks, unsafe calls, silent exception swallowing, hardcoded secrets | ✅ 0 issues |
+| **pip-audit** | All installed packages against NIST NVD + PyPI advisory databases for known CVEs | ✅ 0 vulnerabilities |
+| **Manual grep** | Source code scanned for `subprocess`, `os.system`, `eval`, `exec`, hardcoded API key patterns (`sk-`, `gsk_`) | ✅ 0 findings |
+| **git ls-files** | Confirms `.env` (real keys) is never tracked in version control | ✅ Not tracked |
+| **XSS review** | Any user-supplied data (resume text, JD keywords) rendered via `unsafe_allow_html` is escaped with `html.escape()` | ✅ All escaped |
+
+### How to Run Locally
+
+```bash
+source .venv/bin/activate
+
+# Static security analysis
+bandit -r app/ -f txt -q
+
+# Dependency CVE scan
+pip-audit
+
+# All tests
+pytest tests/ -v
+```
+
+### Security Design Principles
+
+- **No data leaves your machine** unless you explicitly choose a cloud AI provider (Groq, OpenAI, Anthropic) in AI Settings
+- **API keys** are stored in session state only (memory) or locally in `.env` — never logged or persisted to disk by the app
+- **No shell execution** — no `subprocess`, `os.system`, `eval`, or `exec` anywhere in the codebase
+- **File parsing** is done entirely in-memory (`io.BytesIO`) — no user-uploaded bytes are written to disk
+- **User content in HTML** is HTML-escaped before rendering to prevent XSS
 
 ---
 
@@ -444,8 +520,100 @@ ATS-Readiness-Checker/          ← repo root (you are here)
 | Phase 7 — Streamlit UI | ✅ Done | Upload, results, settings pages |
 | Phase 8 — AI Integration | ✅ Done | Ollama (free local) + OpenAI (BYOK) |
 | Phase 9 — Multi-provider AI | ✅ Done | Groq (free), Anthropic, security model |
-| Phase 10 — GitHub Polish | 🔜 Next | Screenshots, CI, badges |
-| Phase 11 — Productisation | 🔜 Future | Save history, comparison, auth |
+| Phase 10 — PDF Column Parsing | ✅ Done | Two-column layout detection; column-aware word extraction |
+| Phase 11 — Section Detection v2 | ✅ Done | 60+ heading aliases, Title Case, inline split, cross-line merge |
+| Phase 12 — Modern UI | ✅ Done | Dark theme, card layouts, chip tags, hero score banner |
+| Phase 13 — LLM Suitability Panel | ✅ Done | Per-provider star ratings + side-by-side compare table |
+| Phase 14 — Ollama Reliability | ✅ Done | Model warm-up ping, 300 s timeout, structured error messages |
+| Phase 15 — Dev Experience | ✅ Done | Auto-reload on save, VS Code task, `.streamlit/config.toml` |
+| Phase 16 — GitHub Polish | 🔜 Next | Screenshots, CI workflow, badges |
+| Phase 17 — Productisation | 🔜 Future | Save history, resume comparison, auth |
+
+---
+
+## Development — Auto-reload on Save
+
+The app is configured to **automatically rerun** in the browser whenever you save a
+Python file — no manual refresh needed.
+
+This is enabled via `.streamlit/config.toml`:
+```toml
+[server]
+runOnSave    = true
+fileWatcherType = "poll"   # reliable on Google Drive / network mounts
+pollInterval    = 1000     # check every 1 second
+```
+
+### Starting the app
+
+**Option 1 — VS Code task (recommended)**
+```
+Cmd+Shift+B  →  ▶ Run ATS Insight
+```
+Or: Command Palette (`Cmd+Shift+P`) → *Tasks: Run Build Task*.
+
+**Option 2 — Terminal**
+```bash
+source .venv/bin/activate
+streamlit run app/main.py --server.runOnSave true --server.fileWatcherType poll
+```
+
+> The `--server.fileWatcherType poll` flag is important if your project lives on
+> Google Drive or any network-mounted path — macOS native filesystem events are
+> unreliable on those paths.
+
+---
+
+## Changelog
+
+### 2026-04-12 — Section Detection v2 + Modern UI + LLM Panel
+
+**Section detection overhaul (`app/core/extractor.py`)**
+- Expanded `SECTION_HEADINGS` from ~25 to 60+ aliases covering common resume
+  variations: `executive summary`, `career objective`, `additional professional
+  experience`, `core leadership`, `work background`, `training`, and more
+- `_is_heading()` now handles ALL-CAPS, Title Case, and prefix matching with
+  generous length tolerance (was broken for headings longer than ~30 chars)
+- New `_preprocess_lines()` runs two passes before section splitting:
+  - **Cross-line merge** — `"EDUCATION &"` + `"CERTIFICATIONS"` → one heading
+  - **Inline split** — `"EDUCATION Validated automation…"` → heading + body
+- Terminal logging shows every detected section and field mapping
+
+**Column-aware PDF extraction (`app/core/parser.py`)**
+- Replaced simple `page.extract_text()` with per-word x-position clustering
+- Detects two-column layouts and extracts each column independently so section
+  headings no longer collide with sidebar content from the opposite column
+- Falls back gracefully to standard extraction for single-column pages
+- Full `logging` instrumentation (page count, layout type, char count)
+
+**Modern dark UI (`app/main.py`, `app/ui/results_page.py`, `app/ui/upload_page.py`)**
+- Global CSS injected at startup: dark slate theme (`#0f172a`), Inter font, styled
+  tabs, buttons, inputs, selects, expanders, and alerts
+- Hero score banner with gradient card, large score number, colored label pill,
+  and animated progress bar
+- Category breakdown as top-bordered cards (color-coded by score tier)
+- Strengths/weaknesses in tinted panel boxes
+- Keyword chips rendered as colored pill tags instead of comma-separated text
+- Recommendation items as indigo left-border cards
+- Upload page with hero intro card, drop-zone, word-count indicator, and
+  color-coded AI engine badge
+
+**LLM Suitability Panel (`app/ui/results_page.py`)**
+- Collapsible expander on every results page showing the active AI engine's
+  description, best-for note, limitations, and ★ star ratings across:
+  Resume Understanding · Keyword Analysis · Feedback Quality · Speed · Privacy
+- Side-by-side comparison table of all five providers; active one highlighted
+
+**Ollama reliability (`app/ai/llm_client.py`, `app/main.py`)**
+- Read timeout raised from 120 s → 300 s
+- `_warm_model()` pre-ping ensures weights are loaded before the main request,
+  preventing silent stalls during cold start
+- `ConnectionError` and `Timeout` caught separately with human-readable messages
+- UI shows structured error card with actionable tips instead of raw exception
+
+**Dev experience**
+- `.streamlit/config.toml` — `runOnSave = true`, `fileWatcherType = poll`
+- `.vscode/tasks.json` — `Cmd+Shift+B` launches the app with correct flags
 
 ---
 
@@ -546,12 +714,110 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-## Disclaimer
+## Disclaimer & Context
 
-ATS Insight is an **estimator**, not a guarantee.  
-It simulates common ATS and recruiter screening patterns based on publicly known
-best practices. It does not replicate any specific commercial ATS product.  
-Results should be used as one data point alongside your own judgement.
+### ATS Insight is an estimator, not a certified ATS
+
+This tool simulates common ATS and recruiter screening patterns based on publicly
+known best practices. It **does not replicate any specific commercial ATS product**,
+and results should be treated as one data point alongside your own judgement —
+not as a guarantee of how any employer's hiring system will process your resume.
+
+---
+
+### What is an ATS, really?
+
+At its core, an Applicant Tracking System (ATS) is a **keyword matching and
+ranking engine**. When you submit a resume online, the ATS:
+
+1. Parses your document into plain text (stripping fonts, tables, columns)
+2. Extracts terms and compares them against the job description and a internal
+   keyword dictionary maintained by the employer or recruiter
+3. Scores or ranks candidates based on term overlap, required qualifications, and
+   configurable rules
+4. Surfaces the highest-ranked resumes to a human reviewer
+
+The sophisticated parts — ranking weights, synonym libraries, semantic matching,
+skills taxonomies, and compliance filters — are **proprietary algorithms** owned
+by each vendor. No two ATS platforms behave identically.
+
+### Commercial ATS platforms (what companies actually buy)
+
+These are the industry-leading platforms hiring teams pay for. Each has its own
+parsing engine, scoring logic, and integration ecosystem:
+
+| Platform | Typical Customer | Pricing |
+|---|---|---|
+| [**Workday**](https://www.workday.com/en-us/products/human-capital-management/recruiting.html) | Large enterprise (Fortune 500) | Enterprise contract ($$$$) |
+| [**Greenhouse**](https://www.greenhouse.com) | Mid-size tech companies | Per-seat SaaS (~$6k–$25k/yr) |
+| [**Lever**](https://www.lever.co) | Growth-stage startups | Per-seat SaaS |
+| [**iCIMS**](https://www.icims.com) | Enterprise & staffing firms | Enterprise contract |
+| [**Taleo** (Oracle)](https://www.oracle.com/human-capital-management/taleo/) | Large enterprise | Enterprise contract |
+| [**SmartRecruiters**](https://www.smartrecruiters.com) | Mid-market | Freemium → SaaS |
+| [**BambooHR**](https://www.bamboohr.com) | SMBs | Per-employee SaaS |
+| [**Jobvite**](https://www.jobvite.com) | Mid-size & enterprise | Enterprise SaaS |
+
+Because their algorithms are **closed-source and proprietary**, no third-party tool
+(including this one) can simulate them exactly. What open-source tools like ATS Insight
+can do is encode the publicly documented best practices that most platforms share:
+clear section headings, keyword density, standard formatting, quantified achievements.
+
+---
+
+### Why this project was built
+
+ATS Insight started as a learning exercise with a specific goal:
+
+> *Build a non-trivial, end-to-end software project — from a blank folder to a
+> deployable web application — using AI and LLM models as active collaborators
+> in the design, coding, and iteration process.*
+
+Every component was built and refined iteratively:
+- **Document parsing** — handling real-world PDFs with multi-column layouts
+- **Section detection** — pattern matching and heuristics tuned on actual resumes
+- **Scoring model** — a transparent, weighted formula you can read and question
+- **LLM integration** — connecting local (Ollama) and cloud (Groq, OpenAI, Anthropic)
+  models to provide narrative feedback beyond what rule-based checks can express
+- **Modern web UI** — Streamlit, styled to look like a real browser application
+
+The project is intentionally **open and transparent**: the scoring formula is
+documented, the keyword matching algorithm is readable, and nothing is hidden
+behind a paid wall. The goal is education — understanding what happens to your
+resume between the "Submit" button and a recruiter's inbox.
+
+---
+
+### References & Further Reading
+
+The claims in this README are grounded in published research and industry reporting.
+The sources below are a good starting point if you want to go deeper.
+
+#### Research & reports
+
+| Source | What it covers |
+|---|---|
+| Fuller, J. & Raman, M. (2021). [**Hidden Workers: Untapped Talent**](https://www.hbs.edu/managing-the-future-of-work/Pages/research.aspx). Harvard Business School / Accenture. | Found that ATS filters discard millions of qualified candidates; documents how keyword-gating works in practice. Widely cited in policy and HR circles. |
+| Bogen, M. & Rieke, A. (2018). [**Help Wanted: An Examination of Hiring Algorithms, Equity, and Bias**](https://upturn.org/work/help-wanted/). Upturn. | Audits how automated screening tools — including ATS — encode bias into hiring pipelines. Explains the scoring mechanism in plain language. |
+| Raghavan, M. et al. (2020). [**Mitigating Bias in Algorithmic Hiring**](https://dl.acm.org/doi/10.1145/3351095.3372828). *ACM FAccT 2020*. | Peer-reviewed. Analyses automated screening models including keyword-based ATS, algorithmic ranking, and fairness implications. |
+| Sanchez-Monedero, J. et al. (2020). [**What Does It Mean to "Solve" the Problem of Discrimination in Hiring?**](https://dl.acm.org/doi/10.1145/3351095.3372849). *ACM FAccT 2020*. | Peer-reviewed. Shows that resume-parsing tools reduce resumes to term-frequency vectors — reinforcing the "keyword matching at its core" framing. |
+| SHRM. [**Using AI in HR & Recruiting**](https://www.shrm.org/topics-tools/topics/artificial-intelligence). Society for Human Resource Management. | Practitioner-focused; explains how HR departments configure and use ATS tools day-to-day. |
+
+#### How ATS parsing actually works (technical)
+
+These academic papers focus on the NLP and information-extraction techniques that
+commercial ATS vendors use internally:
+
+- **Resume Entity Extraction / NER** — Search Google Scholar:
+  [`"resume parsing" NLP named entity recognition`](https://scholar.google.com/scholar?q=resume+parsing+NLP+named+entity+recognition)
+- **Job–Resume Matching** — Search Google Scholar:
+  [`"job description resume matching" relevance ranking`](https://scholar.google.com/scholar?q=job+description+resume+matching+relevance+ranking)
+- **Automated Candidate Screening** — Search Google Scholar:
+  [`"applicant tracking system" keyword screening algorithm`](https://scholar.google.com/scholar?q=applicant+tracking+system+keyword+screening+algorithm)
+
+> The short version: most resume-parsing engines apply rule-based NER to extract
+> structured fields (name, email, skills, titles, dates), then compute term-frequency
+> overlap between resume tokens and JD tokens to produce a ranking score.
+> That is exactly what this project implements — openly and without a paywall.
 
 ---
 

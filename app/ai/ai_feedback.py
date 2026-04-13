@@ -6,6 +6,8 @@ These functions accept a provider name and arbitrary keyword arguments
 client class directly.
 """
 
+import logging
+
 from app.ai.llm_client import get_llm_client
 from app.ai.prompts import (
     SYSTEM_PROMPT,
@@ -14,6 +16,8 @@ from app.ai.prompts import (
 )
 from app.models.resume_models import ParsedResume
 from app.models.scoring_models import ScoringResult
+
+logger = logging.getLogger(__name__)
 
 _NO_AI_MSG = (
     "AI feedback is not available. "
@@ -36,6 +40,7 @@ def get_ai_feedback(
     """
     client = get_llm_client(provider, **client_kwargs)
     if client is None:
+        logger.info("[AI] No provider configured (provider=%r) — skipping AI feedback", provider)
         return _NO_AI_MSG
 
     prompt = build_feedback_prompt(
@@ -45,9 +50,13 @@ def get_ai_feedback(
         weaknesses=scoring.weaknesses,
     )
 
+    logger.info("[AI] Requesting feedback via provider=%r", provider)
     try:
-        return client.chat(prompt=prompt, system=SYSTEM_PROMPT)
+        result = client.chat(prompt=prompt, system=SYSTEM_PROMPT)
+        logger.info("[AI] Feedback received successfully")
+        return result
     except Exception as exc:
+        logger.error("[AI] Feedback request failed: %s", exc)
         return f"AI feedback unavailable: {exc}"
 
 
@@ -62,11 +71,16 @@ def get_summary_rewrite(
     """
     client = get_llm_client(provider, **client_kwargs)
     if client is None:
+        logger.info("[AI] No provider configured — skipping summary rewrite")
         return _NO_AI_MSG
 
     prompt = build_summary_rewrite_prompt(current_summary, job_description)
 
+    logger.info("[AI] Requesting summary rewrite via provider=%r", provider)
     try:
-        return client.chat(prompt=prompt, system=SYSTEM_PROMPT)
+        result = client.chat(prompt=prompt, system=SYSTEM_PROMPT)
+        logger.info("[AI] Summary rewrite received successfully")
+        return result
     except Exception as exc:
+        logger.error("[AI] Summary rewrite failed: %s", exc)
         return f"Could not generate rewrite: {exc}"

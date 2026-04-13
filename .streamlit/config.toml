@@ -1,0 +1,12 @@
+[server]
+# Automatically rerun the app whenever a source file is saved.
+runOnSave = true
+
+# Poll watcher is reliable on Google Drive / network mounts where inotify doesn't fire.
+fileWatcherType = "poll"
+
+# How often to poll for file changes (milliseconds). 1000 ms = 1 second.
+pollInterval = 1000
+
+[browser]
+gatherUsageStats = false
