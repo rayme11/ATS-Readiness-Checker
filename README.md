@@ -6,6 +6,8 @@ ATS Insight helps job seekers understand how their resumes may perform against
 Applicant Tracking Systems (ATS) and recruiter screening.  
 It runs **100 % locally on your machine** — no account required, no data sent externally.
 
+Built and maintained by [Ray Maldonado](https://www.linkedin.com/in/rmaldonado)
+
 ---
 
 ## What It Does
@@ -102,6 +104,20 @@ ATS Insight ships with **three AI modes** — you choose based on your preferenc
 > The default mode is **none** — you get full scoring and recommendations with
 > zero configuration.  
 > Ollama is the recommended path if you want AI feedback at no cost.
+
+---
+
+## How to Use ATS Insight
+
+You have two options:
+
+| Option | Details |
+|---|---|
+| **Run locally** | Clone the repo, install dependencies, run with Streamlit — full control, works offline |
+| **Run free online** | *(Coming soon)* — No install needed, runs in your browser via a hosted deployment |
+
+> The hosted online version is **TBD** and will be linked here once available.  
+> For now, follow the local setup below — it takes about 5 minutes.
 
 ---
 
@@ -331,10 +347,94 @@ ATS-Readiness-Checker/          ← repo root (you are here)
 
 ---
 
-## Contributing
+## Contributing & Branching Strategy
 
-This project is currently in active local development.  
-Contribution guidelines will be added once the MVP is stable and published.
+This project follows a simple, clean branching model that keeps `main` always stable
+while allowing free development on `dev` and short-lived feature branches.
+
+### Branch Map
+
+```
+main          ← stable, deployable, protected
+  └── dev     ← integration branch — all features land here first
+        ├── feature/my-feature     ← new functionality
+        ├── fix/my-bug-fix         ← bug corrections
+        └── hotfix/critical-patch  ← urgent fixes (merges to main AND dev)
+```
+
+### Rules
+
+| Branch | Purpose | Who merges into it |
+|---|---|---|
+| `main` | Production-ready, always green | PRs from `dev` (or `hotfix/*`) only |
+| `dev` | Active development integration | PRs from `feature/*` and `fix/*` |
+| `feature/*` | One feature or improvement per branch | Creator, via PR into `dev` |
+| `fix/*` | Bug fix not urgent enough for hotfix | Creator, via PR into `dev` |
+| `hotfix/*` | Critical fix that can't wait for `dev` | Creator, via PR into `main` AND `dev` |
+
+### Step-by-Step: Starting New Work
+
+**1 — Make sure your local `dev` is up to date**
+```bash
+git checkout dev
+git pull origin dev
+```
+
+**2 — Create your feature branch from `dev`**
+```bash
+git checkout -b feature/your-feature-name
+# examples:
+#   feature/add-pdf-export
+#   fix/keyword-score-edge-case
+#   hotfix/crash-on-empty-resume
+```
+
+**3 — Do your work, commit often with clear messages**
+```bash
+git add .
+git commit -m "feat: add PDF export button to results page"
+# Prefix conventions:
+#   feat:     new feature
+#   fix:      bug fix
+#   docs:     README or comment changes
+#   test:     test-only changes
+#   refactor: code restructuring without behaviour change
+#   chore:    tooling, config, deps
+```
+
+**4 — Push your branch and open a Pull Request into `dev`**
+```bash
+git push origin feature/your-feature-name
+# Then open a PR on GitHub: base = dev, compare = your branch
+```
+
+**5 — After review, merge into `dev`. When `dev` is stable, merge into `main`**
+```bash
+git checkout main
+git merge dev --no-ff
+git push origin main
+```
+
+### Setting Up the `dev` Branch (First Time)
+
+If `dev` doesn't exist yet in the repo:
+```bash
+git checkout -b dev
+git push -u origin dev
+```
+Then set `dev` as the default branch for PRs in GitHub:
+*Settings → Branches → Default branch → change to `dev`*
+
+### Protecting `main` on GitHub
+
+Go to *Settings → Branches → Add branch protection rule* for `main`:
+- ✅ Require a pull request before merging
+- ✅ Require at least 1 approval
+- ✅ Require status checks to pass (once CI is added)
+- ✅ Do not allow force pushes
+
+> Contributions are welcome once the MVP is stable and published.
+> Check open issues or discussions before starting large features.
 
 ---
 
@@ -350,3 +450,10 @@ ATS Insight is an **estimator**, not a guarantee.
 It simulates common ATS and recruiter screening patterns based on publicly known
 best practices. It does not replicate any specific commercial ATS product.  
 Results should be used as one data point alongside your own judgement.
+
+---
+
+## Author
+
+Built by [Ray Maldonado](https://www.linkedin.com/in/rmaldonado)  
+Feedback, ideas, and contributions are welcome.
