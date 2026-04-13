@@ -39,6 +39,130 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+# ── Global CSS — dark theme, card polish, typography ─────────────────────────
+st.markdown(
+    """
+    <style>
+    /* ── Base & background ── */
+    .stApp { background-color: #0f172a; }
+    .block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 1100px; }
+
+    /* ── Hide Streamlit default chrome ── */
+    #MainMenu, footer, header { visibility: hidden; }
+
+    /* ── Typography ── */
+    html, body, [class*="css"] { font-family: 'Inter', 'Segoe UI', sans-serif; }
+    h1, h2, h3 { color: #f1f5f9 !important; }
+    p, li { color: #cbd5e1; }
+
+    /* ── Tabs ── */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 6px 8px;
+        border: 1px solid #334155;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        padding: 8px 20px;
+        color: #94a3b8;
+        font-weight: 600;
+        font-size: 14px;
+        background: transparent;
+        border: none;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #6366f1 !important;
+        color: #fff !important;
+    }
+    .stTabs [data-baseweb="tab-border"] { display: none; }
+    .stTabs [data-baseweb="tab-panel"] { padding-top: 24px; }
+
+    /* ── Buttons ── */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        font-size: 15px !important;
+        padding: 14px 0 !important;
+        color: #fff !important;
+        transition: opacity 0.2s ease !important;
+    }
+    .stButton > button[kind="primary"]:hover { opacity: 0.88 !important; }
+    .stButton > button:not([kind="primary"]) {
+        background: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+    }
+    .stButton > button:not([kind="primary"]):hover {
+        border-color: #6366f1 !important;
+        color: #e0e7ff !important;
+    }
+
+    /* ── Text inputs & text areas ── */
+    .stTextArea textarea, .stTextInput input {
+        background: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        color: #f1f5f9 !important;
+        font-size: 14px !important;
+    }
+    .stTextArea textarea:focus, .stTextInput input:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 2px #6366f122 !important;
+    }
+
+    /* ── File uploader ── */
+    [data-testid="stFileUploader"] {
+        background: #1e293b !important;
+        border: 2px dashed #334155 !important;
+        border-radius: 12px !important;
+    }
+
+    /* ── Select boxes ── */
+    .stSelectbox [data-baseweb="select"] > div {
+        background: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        color: #f1f5f9 !important;
+    }
+
+    /* ── Expanders ── */
+    .streamlit-expanderHeader {
+        background: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 10px !important;
+        color: #e2e8f0 !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+    }
+    .streamlit-expanderContent {
+        background: #1a2236 !important;
+        border: 1px solid #334155 !important;
+        border-top: none !important;
+        border-radius: 0 0 10px 10px !important;
+    }
+
+    /* ── Radio buttons ── */
+    .stRadio label { color: #cbd5e1 !important; font-size: 14px !important; }
+
+    /* ── Alerts ── */
+    .stSuccess { background: #14532d33 !important; border-color: #16a34a55 !important; }
+    .stWarning { background: #78350f33 !important; border-color: #d9770655 !important; }
+    .stError   { background: #7c1d1d33 !important; border-color: #dc262655 !important; }
+    .stInfo    { background: #1e3a5f33 !important; border-color: #2563eb55 !important; }
+
+    /* ── Divider ── */
+    hr { border-color: #1e293b !important; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 def _init_session_state() -> None:
     defaults = {
@@ -59,10 +183,30 @@ def _init_session_state() -> None:
 def main() -> None:
     _init_session_state()
 
-    st.title("📄 ATS Insight")
     st.markdown(
-        "*Open-source resume ATS readiness analyzer — "
-        "free rule-based scoring with optional local or cloud AI.*"
+        """
+        <div style="
+            display:flex; align-items:center; gap:16px;
+            margin-bottom:28px;
+        ">
+            <div style="
+                background:linear-gradient(135deg,#6366f1,#4f46e5);
+                border-radius:14px; width:52px; height:52px;
+                display:flex; align-items:center; justify-content:center;
+                font-size:26px; flex-shrink:0;
+            ">📄</div>
+            <div>
+                <div style="color:#f1f5f9;font-size:28px;font-weight:800;line-height:1.1;">
+                    ATS Insight
+                </div>
+                <div style="color:#64748b;font-size:14px;margin-top:3px;">
+                    Open-source resume ATS readiness analyzer
+                    — rule-based scoring with optional local or cloud AI
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
     tab_analyze, tab_settings = st.tabs(["🔍 Analyze Resume", "⚙️ AI Settings"])
@@ -131,9 +275,10 @@ def _run_analysis() -> None:
     provider = st.session_state.get("ai_provider", "none")
 
     if provider == "ollama":
+        model = st.session_state.get("ollama_model", "llama3")
         with st.spinner(
-            f"Getting AI feedback from Ollama "
-            f"({st.session_state.get('ollama_model', 'llama3')})…"
+            f"Loading model '{model}' and generating AI feedback… "
+            f"(first run can take 30–120 s while Ollama loads weights)"
         ):
             ai_feedback = get_ai_feedback(
                 resume=resume,
@@ -141,8 +286,18 @@ def _run_analysis() -> None:
                 job_description=jd_text,
                 provider="ollama",
                 ollama_base_url=st.session_state.get("ollama_base_url"),
-                ollama_model=st.session_state.get("ollama_model", "llama3"),
+                ollama_model=model,
             )
+        if ai_feedback and ai_feedback.startswith("AI feedback unavailable:"):
+            st.error(
+                ai_feedback.replace("AI feedback unavailable: ", "") + "\n\n"
+                "**Tips:**\n"
+                "- Make sure Ollama is running: `ollama serve` in a terminal\n"
+                "- Try again — the model may need a few seconds after loading\n"
+                "- Switch to a smaller model (e.g. `llama3:8b`) in AI Settings",
+                icon="🔴",
+            )
+            ai_feedback = None
 
     elif provider == "openai":
         api_key = st.session_state.get("openai_api_key", "")

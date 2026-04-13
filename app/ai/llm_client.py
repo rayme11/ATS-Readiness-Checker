@@ -76,12 +76,42 @@ class OllamaClient:
             pass
         return []
 
+    # Models can take a long time to load on first use (weights loaded into RAM/VRAM).
+    # 300 s covers even large 13B+ models on modest hardware.
+    _CHAT_TIMEOUT = 300
+
+    def _warm_model(self) -> None:
+        """
+        Send a minimal /api/generate request to ensure the model is loaded
+        before the real (longer) prompt arrives.  This avoids the main request
+        sitting idle while Ollama loads weights, which can silently exhaust the
+        read timeout before a single token is generated.
+        """
+        try:
+            logger.info("[Ollama] Warming model '%s'…", self.model)
+            t0 = time.perf_counter()
+            resp = requests.post(
+                f"{self.base_url}/api/generate",
+                json={"model": self.model, "prompt": "hi", "stream": False},
+                timeout=self._CHAT_TIMEOUT,
+            )
+            elapsed = time.perf_counter() - t0
+            if resp.status_code == 200:
+                logger.info("[Ollama] Model warm after %.1fs", elapsed)
+            else:
+                logger.warning("[Ollama] Warm ping returned status %s", resp.status_code)
+        except Exception as exc:
+            logger.warning("[Ollama] Warm ping failed (non-fatal): %s", exc)
+
     def chat(self, prompt: str, system: Optional[str] = None) -> str:
         """Send a chat completion request and return the response text."""
         logger.info(
             "[Ollama] → POST %s/api/chat  model=%s  prompt_chars=%d",
             self.base_url, self.model, len(prompt),
         )
+        # Ensure the model is loaded; this is a no-op if already resident.
+        self._warm_model()
+
         messages: list[dict] = []
         if system:
             messages.append({"role": "system", "content": system})
@@ -90,11 +120,22 @@ class OllamaClient:
         payload = {"model": self.model, "messages": messages, "stream": False}
 
         t0 = time.perf_counter()
-        resp = requests.post(
-            f"{self.base_url}/api/chat",
-            json=payload,
-            timeout=120,
-        )
+        try:
+            resp = requests.post(
+                f"{self.base_url}/api/chat",
+                json=payload,
+                timeout=self._CHAT_TIMEOUT,
+            )
+        except requests.Timeout:
+            raise RuntimeError(
+                f"Ollama timed out after {self._CHAT_TIMEOUT}s. "
+                "The model may still be loading — try again in a few seconds, "
+                "or pull a smaller model (e.g. `ollama pull llama3:8b`)."
+            )
+        except requests.ConnectionError:
+            raise RuntimeError(
+                "Cannot reach Ollama. Make sure the server is running: `ollama serve`"
+            )
         elapsed = time.perf_counter() - t0
         resp.raise_for_status()
         result = resp.json()["message"]["content"]
