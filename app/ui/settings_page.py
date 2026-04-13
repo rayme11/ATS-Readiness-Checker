@@ -165,9 +165,9 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
         groq_model = st.selectbox(
             "Model",
             options=[
-                "llama3-8b-8192",
-                "llama3-70b-8192",
-                "mixtral-8x7b-32768",
+                "llama-3.1-8b-instant",
+                "llama-3.3-70b-versatile",
+                "llama-3.1-70b-versatile",
                 "gemma2-9b-it",
             ],
             index=0,
@@ -250,7 +250,7 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
     elif _prov == "groq":
         key_ok = "✓ Set" if st.session_state.get("groq_api_key") else "✗ Not set"
         st.caption(
-            f"Current AI mode: **Groq** — model `{st.session_state.get('groq_model', 'llama3-8b-8192')}` "
+            f"Current AI mode: **Groq** — model `{st.session_state.get('groq_model', 'llama-3.1-8b-instant')}` "
             f"— API key: {key_ok}"
         )
     elif _prov == "anthropic":

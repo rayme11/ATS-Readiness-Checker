@@ -204,7 +204,7 @@ class GroqClient:
     The api_key is NEVER persisted to disk by this module.
     """
 
-    def __init__(self, api_key: str, model: str = "llama3-8b-8192") -> None:
+    def __init__(self, api_key: str, model: str = "llama-3.1-8b-instant") -> None:
         if not api_key:
             raise ValueError("Groq API key must not be empty.")
         self.api_key = api_key
@@ -323,7 +323,7 @@ def get_llm_client(
             return None
         return GroqClient(
             api_key=api_key,
-            model=kwargs.get("groq_model", "llama3-8b-8192"),
+            model=kwargs.get("groq_model", "llama-3.1-8b-instant"),
         )
     if provider == "anthropic":
         api_key = kwargs.get("anthropic_api_key", "")

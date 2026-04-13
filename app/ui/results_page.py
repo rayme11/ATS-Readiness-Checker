@@ -412,7 +412,7 @@ def _active_model_label(provider: str) -> str:
     if provider == "openai":
         return f"OpenAI — {st.session_state.get('openai_model', 'gpt-4o-mini')}"
     if provider == "groq":
-        return f"Groq — {st.session_state.get('groq_model', 'llama3-8b-8192')}"
+        return f"Groq — {st.session_state.get('groq_model', 'llama-3.1-8b-instant')}"
     if provider == "anthropic":
         return f"Anthropic — {st.session_state.get('anthropic_model', 'claude-3-haiku-20240307')}"
     return "Rule-based"

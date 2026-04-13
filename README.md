@@ -304,13 +304,13 @@ generous enough for typical resume analysis use.
 # .env  (local development convenience)
 AI_PROVIDER=groq
 GROQ_API_KEY=gsk_...
-GROQ_MODEL=llama3-8b-8192
+GROQ_MODEL=llama-3.1-8b-instant
 ```
 
 Available free models:
 | Model | Best for |
 |---|---|
-| `llama3-8b-8192` | Fast, good quality (recommended) |
+| `llama-3.1-8b-instant` | Fast, good quality (recommended) |
 | `llama3-70b-8192` | Higher quality, slightly slower |
 | `mixtral-8x7b-32768` | Long context windows |
 | `gemma2-9b-it` | Google's open model |

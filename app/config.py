@@ -35,7 +35,7 @@ class Config:
     # Free tier: https://console.groq.com  — no credit card required.
     # Works for both local and hosted deployments.
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama3-8b-8192")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 
     # ── Anthropic Claude (bring-your-own-key, pay-per-use) ────────────────────
     # Note: a Claude.ai Pro subscription is NOT the same as an API key.

@@ -208,6 +208,19 @@ def main() -> None:
                     Open-source resume ATS readiness analyzer
                     — rule-based scoring with optional local or cloud AI
                 </div>
+                <div style="margin-top:6px;font-size:13px;">
+                    <a href="https://github.com/rayme11/ATS-Readiness-Checker"
+                       target="_blank"
+                       style="color:#6366f1;text-decoration:none;font-weight:600;">
+                        ⭐ View source on GitHub
+                    </a>
+                    <span style="color:#334155;margin:0 8px;">·</span>
+                    <a href="https://www.linkedin.com/in/rmaldonado"
+                       target="_blank"
+                       style="color:#6366f1;text-decoration:none;font-weight:600;">
+                        👤 Author on LinkedIn
+                    </a>
+                </div>
             </div>
         </div>
         """,
@@ -326,7 +339,7 @@ def _run_analysis() -> None:
         if api_key:
             with st.spinner(
                 f"Getting AI feedback from Groq "
-                f"({st.session_state.get('groq_model', 'llama3-8b-8192')})…"
+                f"({st.session_state.get('groq_model', 'llama-3.1-8b-instant')})…"
             ):
                 ai_feedback = get_ai_feedback(
                     resume=resume,
@@ -334,7 +347,7 @@ def _run_analysis() -> None:
                     job_description=jd_text,
                     provider="groq",
                     groq_api_key=api_key,
-                    groq_model=st.session_state.get("groq_model", "llama3-8b-8192"),
+                    groq_model=st.session_state.get("groq_model", "llama-3.1-8b-instant"),
                 )
         else:
             st.warning(
