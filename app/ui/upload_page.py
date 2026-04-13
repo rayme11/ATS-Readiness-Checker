@@ -42,8 +42,24 @@ def render_upload() -> bool:
 
     # ── Privacy / local mode callout ──────────────────────────────────────────
     with st.expander("🔒 Privacy & AI modes — what stays on your machine?", expanded=False):
-        st.markdown(
-            """
+        if config.IS_HOSTED:
+            st.markdown(
+                """
+| Mode | Where AI runs | Internet needed? | API key needed? |
+|---|---|---|---|
+| 🔵 **Rule-based only** *(default)* | No AI — pure rule engine | ❌ Never | ❌ No |
+| 🟡 **Groq** | Groq cloud servers | ✅ Yes | ✅ Free key |
+| 🟠 **OpenAI** | OpenAI cloud servers | ✅ Yes | ✅ Paid key |
+| 🟣 **Anthropic** | Anthropic cloud servers | ✅ Yes | ✅ Paid key |
+
+**Want 100% privacy?** Choose **Rule-based only** — no AI is invoked and your resume never leaves this server.
+
+> Your resume file is **never stored** — even in cloud AI modes the text is sent only to the AI provider you choose for that single request, then discarded.
+                """
+            )
+        else:
+            st.markdown(
+                """
 | Mode | Where AI runs | Internet needed? | API key needed? |
 |---|---|---|---|
 | 🔵 **Rule-based only** *(default)* | No AI — pure rule engine | ❌ Never | ❌ No |
@@ -55,8 +71,8 @@ def render_upload() -> bool:
 **Want to stay 100% local?** Choose **Rule-based only** (no AI) or install **Ollama** and pick it in the ⚙️ AI Settings tab — your resume never leaves your machine either way.
 
 > Your resume file is **never uploaded to any external server** — even in cloud AI modes the text is sent only to the AI provider you choose, not stored anywhere else.
-            """
-        )
+                """
+            )
 
     col_file, col_jd = st.columns(2)
 
