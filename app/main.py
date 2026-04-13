@@ -38,6 +38,8 @@ def _init_session_state() -> None:
         "ollama_base_url": "http://localhost:11434",
         "ollama_model": "llama3",
         "openai_model": "gpt-4o-mini",
+        "groq_model": "llama3-8b-8192",
+        "anthropic_model": "claude-3-haiku-20240307",
         "jd_text": "",
         "uploaded_file": None,
     }
@@ -151,7 +153,49 @@ def _run_analysis() -> None:
                 "OpenAI is selected but no API key has been entered. "
                 "Add one in the **AI Settings** tab."
             )
+    elif provider == "groq":
+        api_key = st.session_state.get("groq_api_key", "")
+        if api_key:
+            with st.spinner(
+                f"Getting AI feedback from Groq "
+                f"({st.session_state.get('groq_model', 'llama3-8b-8192')})…"
+            ):
+                ai_feedback = get_ai_feedback(
+                    resume=resume,
+                    scoring=scoring,
+                    job_description=jd_text,
+                    provider="groq",
+                    groq_api_key=api_key,
+                    groq_model=st.session_state.get("groq_model", "llama3-8b-8192"),
+                )
+        else:
+            st.warning(
+                "Groq is selected but no API key has been entered. "
+                "Add one in the **AI Settings** tab."
+            )
 
+    elif provider == "anthropic":
+        api_key = st.session_state.get("anthropic_api_key", "")
+        if api_key:
+            with st.spinner(
+                f"Getting AI feedback from Anthropic Claude "
+                f"({st.session_state.get('anthropic_model', 'claude-3-haiku-20240307')})…"
+            ):
+                ai_feedback = get_ai_feedback(
+                    resume=resume,
+                    scoring=scoring,
+                    job_description=jd_text,
+                    provider="anthropic",
+                    anthropic_api_key=api_key,
+                    anthropic_model=st.session_state.get(
+                        "anthropic_model", "claude-3-haiku-20240307"
+                    ),
+                )
+        else:
+            st.warning(
+                "Anthropic is selected but no API key has been entered. "
+                "Add one in the **AI Settings** tab."
+            )
     # ── Render results ────────────────────────────────────────────────────────
     render_results(scoring, keyword_match, formatting, ai_feedback)
 

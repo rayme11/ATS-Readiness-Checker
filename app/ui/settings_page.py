@@ -14,11 +14,16 @@ def render_settings() -> None:
         """
 Configure how **ATS Insight** uses AI for deeper resume analysis.
 
-| Mode | Cost | Requirements |
-|---|---|---|
-| **None (Rule-based only)** | Free | Nothing extra |
-| **Ollama (Local AI)** | Free | [Ollama](https://ollama.ai) installed & running |
-| **OpenAI (Your API Key)** | Pay-per-use | Your own [OpenAI key](https://platform.openai.com/api-keys) |
+| Mode | Cost | Local run | Hosted / online | Requirements |
+|---|---|---|---|---|
+| **None (Rule-based)** | Free | ✅ | ✅ | Nothing extra |
+| **Ollama (Local AI)** | Free | ✅ | ❌ | [Ollama](https://ollama.ai) installed & running |
+| **Groq (Free Tier)** | Free | ✅ | ✅ | Free key from [console.groq.com](https://console.groq.com) |
+| **OpenAI** | Pay-per-use | ✅ | ✅ | Your own [OpenAI key](https://platform.openai.com/api-keys) |
+| **Anthropic Claude** | Pay-per-use | ✅ | ✅ | Your own [Anthropic key](https://console.anthropic.com) |
+
+> 🔒 **Security:** Keys you enter here are stored **in your browser session only** — never
+> written to disk, never logged, cleared when you close or refresh the tab.
         """
     )
 
@@ -26,17 +31,18 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
 
     # Determine current selection index for the radio widget
     current = st.session_state.get("ai_provider", "none")
-    idx = {"none": 0, "ollama": 1, "openai": 2}.get(current, 0)
+    idx = {"none": 0, "ollama": 1, "groq": 2, "openai": 3, "anthropic": 4}.get(current, 0)
 
     provider_choice = st.radio(
         "Select AI Provider",
         options=[
             "None (Rule-based only)",
             "Ollama — Free & Local",
+            "Groq — Free Tier (Bring Your Own Key)",
             "OpenAI — Bring Your Own Key",
+            "Anthropic Claude — Bring Your Own Key",
         ],
         index=idx,
-        horizontal=True,
     )
 
     st.divider()
@@ -129,6 +135,92 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
         st.session_state["openai_model"] = openai_model
 
     # ── No AI ────────────────────────────────────────────────────────────────
+    # ── Groq config ──────────────────────────────────────────────────────────
+    elif provider_choice == "Groq — Free Tier (Bring Your Own Key)":
+        st.session_state["ai_provider"] = "groq"
+        st.subheader("Groq Configuration")
+
+        st.success(
+            "🆓 Groq has a **free developer tier** — no credit card required.  \n"
+            "Sign up and get your key at [console.groq.com](https://console.groq.com)"
+        )
+        st.warning(
+            "🔒 Your key is stored **in session memory only** — "
+            "never written to disk or sent anywhere except Groq's API.",
+            icon="⚠️",
+        )
+
+        groq_key = st.text_input(
+            "Groq API Key",
+            type="password",
+            value=st.session_state.get("groq_api_key", ""),
+            placeholder="gsk_…",
+            help="Get your free key at https://console.groq.com",
+        )
+        if groq_key:
+            st.session_state["groq_api_key"] = groq_key
+
+        groq_model = st.selectbox(
+            "Model",
+            options=[
+                "llama3-8b-8192",
+                "llama3-70b-8192",
+                "mixtral-8x7b-32768",
+                "gemma2-9b-it",
+            ],
+            index=0,
+            help="All models are available on the Groq free developer tier.",
+        )
+        st.session_state["groq_model"] = groq_model
+
+        with st.expander("ℹ️ About Groq free tier"):
+            st.markdown(
+                "- **No credit card** required to sign up\n"
+                "- Rate limits apply (~30 req/min on free tier) — more than enough for resume analysis\n"
+                "- Works with both local and hosted deployments of this app\n"
+                "- See [console.groq.com](https://console.groq.com) for current model list and limits"
+            )
+
+    # ── Anthropic config ──────────────────────────────────────────────────────
+    elif provider_choice == "Anthropic Claude — Bring Your Own Key":
+        st.session_state["ai_provider"] = "anthropic"
+        st.subheader("Anthropic Claude Configuration")
+
+        st.warning(
+            "💳 Anthropic's API is **pay-per-use** — there is no free tier.  \n"
+            "⚠️ A **Claude.ai Pro** subscription does **not** include API access — "
+            "API billing is separate at [console.anthropic.com](https://console.anthropic.com).",
+            icon="⚠️",
+        )
+        st.info(
+            "🔒 Your key is stored **in session memory only** — "
+            "never written to disk or sent anywhere except Anthropic's API.",
+            icon="ℹ️",
+        )
+
+        anthropic_key = st.text_input(
+            "Anthropic API Key",
+            type="password",
+            value=st.session_state.get("anthropic_api_key", ""),
+            placeholder="sk-ant-…",
+            help="Get your key at https://console.anthropic.com",
+        )
+        if anthropic_key:
+            st.session_state["anthropic_api_key"] = anthropic_key
+
+        anthropic_model = st.selectbox(
+            "Model",
+            options=[
+                "claude-3-haiku-20240307",
+                "claude-3-5-sonnet-20241022",
+                "claude-3-opus-20240229",
+            ],
+            index=0,
+            help="claude-3-haiku is cheapest and fastest for resume analysis.",
+        )
+        st.session_state["anthropic_model"] = anthropic_model
+
+    # ── No AI ────────────────────────────────────────────────────────────────
     else:
         st.session_state["ai_provider"] = "none"
         st.info(
@@ -151,5 +243,18 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
         key_ok = "✓ Set" if st.session_state.get("openai_api_key") else "✗ Not set"
         st.caption(
             f"Current AI mode: **OpenAI** — model `{st.session_state.get('openai_model', 'gpt-4o-mini')}` "
+            f"— API key: {key_ok}"
+        )
+    elif _prov == "groq":
+        key_ok = "✓ Set" if st.session_state.get("groq_api_key") else "✗ Not set"
+        st.caption(
+            f"Current AI mode: **Groq** — model `{st.session_state.get('groq_model', 'llama3-8b-8192')}` "
+            f"— API key: {key_ok}"
+        )
+    elif _prov == "anthropic":
+        key_ok = "✓ Set" if st.session_state.get("anthropic_api_key") else "✗ Not set"
+        st.caption(
+            f"Current AI mode: **Anthropic Claude** — "
+            f"model `{st.session_state.get('anthropic_model', 'claude-3-haiku-20240307')}` "
             f"— API key: {key_ok}"
         )
