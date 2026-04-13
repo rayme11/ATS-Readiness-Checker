@@ -116,11 +116,8 @@ ATS Insight ships with **three AI modes** — you choose based on your preferenc
 ### 2 — Clone or download the project
 
 ```bash
-# Option A: git clone (recommended)
 git clone https://github.com/rayme11/ATS-Readiness-Checker.git
-cd ATS-Readiness-Checker/ats-insight
-
-# Option B: open the ats-insight/ folder directly in your terminal
+cd ATS-Readiness-Checker
 ```
 
 ### 3 — Create a virtual environment
@@ -239,7 +236,7 @@ OPENAI_MODEL=gpt-4o-mini
 ## Running Tests
 
 ```bash
-# From the ats-insight/ directory, with .venv activated
+# From the repo root, with .venv activated
 pytest tests/ -v
 ```
 
@@ -255,9 +252,9 @@ tests/test_keyword_matcher.py - 7 tests
 ## Project Structure
 
 ```
-ats-insight/
+ATS-Readiness-Checker/          ← repo root (you are here)
 ├── app/
-│   ├── main.py               ← Streamlit entry point
+│   ├── main.py               ← Streamlit entry point  →  streamlit run app/main.py
 │   ├── config.py             ← Environment variable loading
 │   ├── ui/
 │   │   ├── upload_page.py    ← File upload + JD input
@@ -284,6 +281,7 @@ ats-insight/
 ├── sample_data/
 │   └── sample_jd.txt         ← Example job description for testing
 ├── .env.example              ← Copy to .env and fill in
+├── .venv/                    ← Virtual environment (gitignored)
 ├── requirements.txt
 ├── LICENSE                   ← MIT
 └── README.md                 ← This file
