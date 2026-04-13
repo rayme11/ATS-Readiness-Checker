@@ -27,8 +27,20 @@ class Config:
 
     # ── OpenAI (bring-your-own-key) ──────────────────────────────────────────
     # Never hard-code keys here; always inject via .env or the Settings UI.
+    # Note: a ChatGPT Plus subscription is NOT the same as an API key.
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+    # ── Groq (bring-your-own-key, free developer tier available) ─────────────
+    # Free tier: https://console.groq.com  — no credit card required.
+    # Works for both local and hosted deployments.
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama3-8b-8192")
+
+    # ── Anthropic Claude (bring-your-own-key, pay-per-use) ────────────────────
+    # Note: a Claude.ai Pro subscription is NOT the same as an API key.
+    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    ANTHROPIC_MODEL: str = os.getenv("ANTHROPIC_MODEL", "claude-3-haiku-20240307")
 
 
 config = Config()

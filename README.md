@@ -93,17 +93,23 @@ flowchart TD
 
 ## AI Modes
 
-ATS Insight ships with **three AI modes** — you choose based on your preference:
+ATS Insight supports **five AI modes**. Choose based on your setup and whether you're running locally or hosting online:
 
-| Mode | Cost | How to enable |
-|---|---|---|
-| **None (default)** | Free | Runs without any setup |
-| **Ollama — Local AI** | Free | Install Ollama + pull a model |
-| **OpenAI — Your Key** | Pay-per-use | Paste your API key in the Settings tab |
+| Mode | Cost | Local run | Hosted / online | How to enable |
+|---|---|---|---|---|
+| **None (default)** | Free | ✅ | ✅ | Nothing extra |
+| **Ollama — Local AI** | Free | ✅ | ❌ local server only | Install Ollama + pull a model |
+| **Groq — Free Cloud** | Free | ✅ | ✅ | Free key from [console.groq.com](https://console.groq.com) |
+| **OpenAI — Your Key** | Pay-per-use | ✅ | ✅ | Paste your API key in the Settings tab |
+| **Anthropic Claude — Your Key** | Pay-per-use | ✅ | ✅ | Paste your API key in the Settings tab |
 
-> The default mode is **none** — you get full scoring and recommendations with
-> zero configuration.  
-> Ollama is the recommended path if you want AI feedback at no cost.
+> **Default mode is none** — full scoring and recommendations with zero setup.  
+> **Best free local option:** Ollama (your hardware, no data leaves your machine).  
+> **Best free online option:** Groq (free developer tier, no credit card required).
+
+> ⚠️ **Common misconceptions:**  
+> A **ChatGPT Plus** subscription does NOT include API access — OpenAI API is billed separately.  
+> A **Claude.ai Pro** subscription does NOT include API access — Anthropic API is billed separately.
 
 ---
 
@@ -113,8 +119,8 @@ You have two options:
 
 | Option | Details |
 |---|---|
-| **Run locally** | Clone the repo, install dependencies, run with Streamlit — full control, works offline |
-| **Run free online** | *(Coming soon)* — No install needed, runs in your browser via a hosted deployment |
+| **Run locally** | Clone the repo, install dependencies, run with Streamlit — full control, works offline, Ollama supported |
+| **Run free online** | *(Coming soon)* — No install needed; use Groq (free tier) or your own API key for AI features |
 
 > The hosted online version is **TBD** and will be linked here once available.  
 > For now, follow the local setup below — it takes about 5 minutes.
@@ -249,6 +255,102 @@ OPENAI_MODEL=gpt-4o-mini
 
 ---
 
+### Option C — Groq (Free Tier, Works Locally and Hosted)
+
+Groq runs open-source models (Llama 3, Mistral, Gemma) in the cloud via blazing-fast
+inference hardware. The developer free tier requires **no credit card**.
+
+1. Sign up at <https://console.groq.com> and create an API key
+2. Open the **AI Settings** tab in the app
+3. Select **Groq — Free Tier**
+4. Paste your key (starts with `gsk_`)
+
+**Why Groq is ideal for hosted deployments:**  
+Unlike Ollama (which needs a local server), Groq's API works from anywhere —
+your laptop, a cloud VM, or Streamlit Community Cloud. Free tier limits are
+generous enough for typical resume analysis use.
+
+```bash
+# .env  (local development convenience)
+AI_PROVIDER=groq
+GROQ_API_KEY=gsk_...
+GROQ_MODEL=llama3-8b-8192
+```
+
+Available free models:
+| Model | Best for |
+|---|---|
+| `llama3-8b-8192` | Fast, good quality (recommended) |
+| `llama3-70b-8192` | Higher quality, slightly slower |
+| `mixtral-8x7b-32768` | Long context windows |
+| `gemma2-9b-it` | Google's open model |
+
+---
+
+### Option D — Anthropic Claude (Bring Your Own Key)
+
+Claude models (Haiku, Sonnet, Opus) offer strong reasoning on structured text.
+
+> ⚠️ A **Claude.ai Pro** subscription does **not** include API access.
+> API keys are obtained and billed separately at <https://console.anthropic.com>.
+
+1. Get a key at <https://console.anthropic.com>
+2. Open the **AI Settings** tab in the app
+3. Select **Anthropic Claude — Bring Your Own Key**
+4. Paste your key (starts with `sk-ant-`)
+
+```bash
+# .env  (local development convenience)
+AI_PROVIDER=anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-3-haiku-20240307
+```
+
+| Model | Cost | Notes |
+|---|---|---|
+| `claude-3-haiku-20240307` | Cheapest | Fast, great for summaries |
+| `claude-3-5-sonnet-20241022` | Mid | Best quality/cost balance |
+| `claude-3-opus-20240229` | Premium | Highest quality, most expensive |
+
+---
+
+## Security & Privacy
+
+This section covers how API keys and resume data are handled in both run modes.
+
+### Key principles (apply to all providers)
+
+- **Keys entered in the UI** are stored only in Streamlit's server-side session state.
+  They are **never** written to disk, never logged, and never forwarded to third parties.
+  They are cleared automatically when the browser tab is closed or refreshed.
+- **Resume content** is processed entirely in memory and is never written to disk or stored.
+- **All API calls** go directly from the app to the chosen provider (OpenAI, Groq, Anthropic).
+  The app acts as a local proxy — only the prompts it constructs are sent, not raw resume bytes.
+
+### Local run
+
+| Item | Recommendation |
+|---|---|
+| `.env` file | Copy from `.env.example`, fill in keys, **never commit it** |
+| `.gitignore` | Ensure `.env` and `.venv/` are listed (already done in this repo) |
+| Ollama | Zero network exposure — the LLM runs entirely on your machine |
+| API keys in UI | Session-only; cleared on tab close |
+
+### Hosted / online run (e.g. Streamlit Community Cloud, Render, Railway)
+
+| Item | Recommendation |
+|---|---|
+| **Your own default key** | Use the platform's **Secrets Manager** — never use a `.env` file in production |
+| **User-supplied keys** | Entered via the Settings UI — same session-only guarantee as local |
+| **Ollama** | Not usable by end-users unless you provision Ollama on the server itself |
+| **Groq** | ✅ Recommended free option for hosted apps — cloud API, works anywhere |
+| **HTTPS** | All major hosting platforms enforce HTTPS, so keys are encrypted in transit |
+| **Cross-user isolation** | Each Streamlit session is isolated — one user's keys are never visible to another |
+
+> 🔒 **No secrets are stored between sessions.** When a user closes the tab their API key
+> is gone. They will need to re-enter it on the next visit. This is intentional.
+
+---
 ## Running Tests
 
 ```bash
@@ -284,7 +386,7 @@ ATS-Readiness-Checker/          ← repo root (you are here)
 │   │   ├── scorer.py              ← Weighted category scoring
 │   │   └── recommendations.py    ← Prioritised suggestion builder
 │   ├── ai/
-│   │   ├── llm_client.py     ← Ollama + OpenAI client abstraction
+│   │   ├── llm_client.py     ← Ollama, OpenAI, Groq, Anthropic client abstraction
 │   │   ├── prompts.py        ← Prompt templates
 │   │   └── ai_feedback.py    ← High-level AI feedback functions
 │   └── models/
@@ -341,7 +443,7 @@ ATS-Readiness-Checker/          ← repo root (you are here)
 | Phase 6 — Recommendations | ✅ Done | Prioritised actionable suggestions |
 | Phase 7 — Streamlit UI | ✅ Done | Upload, results, settings pages |
 | Phase 8 — AI Integration | ✅ Done | Ollama (free local) + OpenAI (BYOK) |
-| Phase 9 — Local AI Expansion | 🔜 Next | Additional Ollama model guidance |
+| Phase 9 — Multi-provider AI | ✅ Done | Groq (free), Anthropic, security model |
 | Phase 10 — GitHub Polish | 🔜 Next | Screenshots, CI, badges |
 | Phase 11 — Productisation | 🔜 Future | Save history, comparison, auth |
 
