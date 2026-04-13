@@ -1,0 +1,12 @@
+John Carter
+Senior QA Engineer
+
+Summary:
+Experienced QA engineer with strong automation skills in Selenium and Python.
+
+Experience:
+- Company A: Delivered impactful work
+- Company B: Led initiatives
+
+Skills:
+Python, Java, AWS

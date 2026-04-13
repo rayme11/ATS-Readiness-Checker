@@ -4,6 +4,8 @@ Upload page — collect resume file and optional job description.
 
 import streamlit as st
 
+from app.config import config
+
 
 def render_upload() -> bool:
     """
@@ -66,9 +68,17 @@ def render_upload() -> bool:
             help="Your file is processed entirely on your machine — nothing is uploaded to any server.",
         )
         if uploaded is not None:
-            st.session_state["uploaded_file"] = uploaded
-            st.session_state["file_name"] = uploaded.name
-            st.success(f"Loaded: **{uploaded.name}**")
+            if uploaded.size > config.MAX_FILE_BYTES:
+                st.error(
+                    f"File too large ({uploaded.size / 1_048_576:.1f} MB). "
+                    f"Maximum allowed is {config.MAX_FILE_BYTES // 1_048_576} MB. "
+                    "Try saving as plain PDF or removing embedded images."
+                )
+                st.session_state["uploaded_file"] = None
+            else:
+                st.session_state["uploaded_file"] = uploaded
+                st.session_state["file_name"] = uploaded.name
+                st.success(f"Loaded: **{uploaded.name}**")
 
     with col_jd:
         st.subheader("Job Description (optional)")
@@ -81,6 +91,12 @@ def render_upload() -> bool:
             ),
             value=st.session_state.get("jd_text", ""),
         )
+        if len(jd_text) > config.MAX_JD_CHARS:
+            st.warning(
+                f"Job description is very long ({len(jd_text):,} chars). "
+                f"Trimmed to {config.MAX_JD_CHARS:,} characters for analysis."
+            )
+            jd_text = jd_text[:config.MAX_JD_CHARS]
         st.session_state["jd_text"] = jd_text
 
     st.divider()

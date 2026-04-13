@@ -1,0 +1,12 @@
+Sophia Nguyen
+Data Analyst
+
+Summary:
+Data analyst skilled in SQL, Python, and data visualization.
+
+Experience:
+- Company A: Delivered impactful work
+- Company B: Led initiatives
+
+Skills:
+Python, Java, AWS
