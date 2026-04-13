@@ -11,8 +11,25 @@ from app.config import config
 def render_settings() -> None:
     st.header("⚙️ AI Settings")
 
-    st.markdown(
-        """
+    if config.IS_HOSTED:
+        st.markdown(
+            """
+Configure how **ATS Insight** uses AI for deeper resume analysis.
+
+| Mode | Cost | Requirements |
+|---|---|---|
+| **None (Rule-based)** | Free | Nothing extra |
+| **Groq (Free Tier)** | Free | Free key from [console.groq.com](https://console.groq.com) |
+| **OpenAI** | Pay-per-use | Your own [OpenAI key](https://platform.openai.com/api-keys) |
+| **Anthropic Claude** | Pay-per-use | Your own [Anthropic key](https://console.anthropic.com) |
+
+> 🔒 **Security:** Keys you enter here are stored **in your browser session only** — never
+> written to disk, never logged, cleared when you close or refresh the tab.
+            """
+        )
+    else:
+        st.markdown(
+            """
 Configure how **ATS Insight** uses AI for deeper resume analysis.
 
 | Mode | Cost | Local run | Hosted / online | Requirements |
@@ -25,8 +42,8 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
 
 > 🔒 **Security:** Keys you enter here are stored **in your browser session only** — never
 > written to disk, never logged, cleared when you close or refresh the tab.
-        """
-    )
+            """
+        )
 
     st.divider()
 
