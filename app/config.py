@@ -43,13 +43,16 @@ class Config:
     ANTHROPIC_MODEL: str = os.getenv("ANTHROPIC_MODEL", "claude-3-haiku-20240307")
 
     # ── Deployment mode ──────────────────────────────────────────────────────
-    # Streamlit Community Cloud sets HOME=/home/appuser.
-    # Set HOSTED=true in any other cloud environment to get the same behaviour.
-    IS_HOSTED: bool = (
-        os.getenv("STREAMLIT_SHARING_MODE") == "streamlit"
-        or os.getenv("HOME", "") == "/home/appuser"
-        or os.getenv("HOSTED", "").lower() in ("true", "1", "yes")
-    )
+    # Evaluated as a property so Streamlit Cloud secrets (injected as env vars
+    # at runtime) are always picked up — class-level assignments are evaluated
+    # at import time before secrets are available.
+    @property
+    def IS_HOSTED(self) -> bool:  # type: ignore[override]
+        return (
+            os.getenv("STREAMLIT_SHARING_MODE") == "streamlit"
+            or os.getenv("HOME", "") == "/home/appuser"
+            or os.getenv("HOSTED", "").lower() in ("true", "1", "yes")
+        )
 
     # ── Abuse prevention ─────────────────────────────────────────────────────
     MAX_FILE_BYTES: int = int(os.getenv("MAX_FILE_BYTES", str(5 * 1024 * 1024)))  # 5 MB
