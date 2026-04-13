@@ -15,6 +15,14 @@ Built and maintained by [Ray Maldonado](https://www.linkedin.com/in/rmaldonado)
 
 ---
 
+## Preview
+
+![ATS Readiness Report — score card, category breakdown, strengths and risks](docs/screenshots/report-preview.png)
+
+*Score card · Category breakdown · Strengths & risks · AI feedback panel*
+
+---
+
 ## What It Does
 
 Upload a resume (PDF, DOCX, or TXT), optionally paste a job description, and receive:

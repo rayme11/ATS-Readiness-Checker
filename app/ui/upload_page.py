@@ -45,14 +45,14 @@ def render_upload() -> bool:
     # AI mode badge
     provider = st.session_state.get("ai_provider", "none")
     badge_map = {
-        "none": "🔵 Rule-based only",
-        "ollama": f"🟢 Ollama — {st.session_state.get('ollama_model', 'llama3')}",
-        "openai": f"🟠 OpenAI — {st.session_state.get('openai_model', 'gpt-4o-mini')}",
+        "none":      "🔵 Rule-based only",
+        "ollama":    f"🟢 Ollama — {st.session_state.get('ollama_model', 'llama3')}",
+        "groq":      f"🟡 Groq — {st.session_state.get('groq_model', 'llama3-8b-8192')}",
+        "openai":    f"🟠 OpenAI — {st.session_state.get('openai_model', 'gpt-4o-mini')}",
+        "anthropic": f"🟣 Anthropic — {st.session_state.get('anthropic_model', 'claude-3-haiku-20240307')}",
     }
-    st.caption(
-        f"AI mode: **{badge_map.get(provider, 'None')}** "
-        "— change this in the **AI Settings** tab"
-    )
+    badge_label = badge_map.get(provider, f"🔵 Rule-based only")
+    st.caption(f"AI mode: **{badge_label}** — change this in the **AI Settings** tab")
 
     file_ready = st.session_state.get("uploaded_file") is not None
 

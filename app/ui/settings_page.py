@@ -112,7 +112,8 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
 
         st.warning(
             "🔒 Your API key is stored **in session memory only** "
-            "and is never written to disk or sent anywhere except OpenAI.",
+            "and is never written to disk or sent anywhere except OpenAI.  \n"
+            "💡 To persist across restarts, add `OPENAI_API_KEY=sk-…` to your `.env` file.",
             icon="⚠️",
         )
 
@@ -146,7 +147,8 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
         )
         st.warning(
             "🔒 Your key is stored **in session memory only** — "
-            "never written to disk or sent anywhere except Groq's API.",
+            "never written to disk or sent anywhere except Groq's API.  \n"
+            "💡 To persist across restarts, add `GROQ_API_KEY=gsk_…` and `AI_PROVIDER=groq` to your `.env` file.",
             icon="⚠️",
         )
 

@@ -27,6 +27,7 @@ from app.core.formatting_checker import check_formatting
 from app.core.keyword_matcher import match_keywords
 from app.core.parser import parse_resume
 from app.core.recommendations import generate_recommendations
+from app.config import config
 from app.core.scorer import calculate_score
 from app.ui.results_page import render_results
 from app.ui.settings_page import render_settings
@@ -166,12 +167,16 @@ st.markdown(
 
 def _init_session_state() -> None:
     defaults = {
-        "ai_provider": "none",
-        "ollama_base_url": "http://localhost:11434",
-        "ollama_model": "llama3",
-        "openai_model": "gpt-4o-mini",
-        "groq_model": "llama3-8b-8192",
-        "anthropic_model": "claude-3-haiku-20240307",
+        # Seed from .env / config so keys & provider survive restarts
+        "ai_provider":    config.AI_PROVIDER,
+        "ollama_base_url": config.OLLAMA_BASE_URL,
+        "ollama_model":   config.OLLAMA_MODEL,
+        "openai_api_key": config.OPENAI_API_KEY,
+        "openai_model":   config.OPENAI_MODEL,
+        "groq_api_key":   config.GROQ_API_KEY,
+        "groq_model":     config.GROQ_MODEL,
+        "anthropic_api_key": config.ANTHROPIC_API_KEY,
+        "anthropic_model":   config.ANTHROPIC_MODEL,
         "jd_text": "",
         "uploaded_file": None,
     }
