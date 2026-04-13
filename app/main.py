@@ -179,6 +179,7 @@ def _init_session_state() -> None:
         "anthropic_model":   config.ANTHROPIC_MODEL,
         "jd_text": "",
         "uploaded_file": None,
+        "analysis_count": 0,
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -236,7 +237,17 @@ def main() -> None:
         analyze_clicked = render_upload()
 
         if analyze_clicked:
-            _run_analysis()
+            count = st.session_state.get("analysis_count", 0)
+            if count >= config.MAX_ANALYSES_PER_SESSION:
+                st.error(
+                    f"You've run {config.MAX_ANALYSES_PER_SESSION} analyses this session — "
+                    "the limit helps keep the service free for everyone. "
+                    "Refresh the page to start a new session.",
+                    icon="🚫",
+                )
+            else:
+                st.session_state["analysis_count"] = count + 1
+                _run_analysis()
 
 
 def _run_analysis() -> None:

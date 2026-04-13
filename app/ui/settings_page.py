@@ -5,6 +5,7 @@ AI Settings page — lets users switch between rule-based, Ollama, and OpenAI mo
 import streamlit as st
 
 from app.ai.llm_client import OllamaClient
+from app.config import config
 
 
 def render_settings() -> None:
@@ -17,7 +18,7 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
 | Mode | Cost | Local run | Hosted / online | Requirements |
 |---|---|---|---|---|
 | **None (Rule-based)** | Free | ✅ | ✅ | Nothing extra |
-| **Ollama (Local AI)** | Free | ✅ | ❌ | [Ollama](https://ollama.ai) installed & running |
+| **Ollama (Local AI)** | Free | ✅ | ❌ local only | [Ollama](https://ollama.ai) installed & running |
 | **Groq (Free Tier)** | Free | ✅ | ✅ | Free key from [console.groq.com](https://console.groq.com) |
 | **OpenAI** | Pay-per-use | ✅ | ✅ | Your own [OpenAI key](https://platform.openai.com/api-keys) |
 | **Anthropic Claude** | Pay-per-use | ✅ | ✅ | Your own [Anthropic key](https://console.anthropic.com) |
@@ -31,17 +32,32 @@ Configure how **ATS Insight** uses AI for deeper resume analysis.
 
     # Determine current selection index for the radio widget
     current = st.session_state.get("ai_provider", "none")
-    idx = {"none": 0, "ollama": 1, "groq": 2, "openai": 3, "anthropic": 4}.get(current, 0)
 
-    provider_choice = st.radio(
-        "Select AI Provider",
-        options=[
+    # Ollama requires a local server — not available when hosted in the cloud
+    if config.IS_HOSTED:
+        if current == "ollama":
+            current = "none"  # reset to rule-based if previously set to local AI
+            st.session_state["ai_provider"] = "none"
+        provider_options = [
+            "None (Rule-based only)",
+            "Groq — Free Tier (Bring Your Own Key)",
+            "OpenAI — Bring Your Own Key",
+            "Anthropic Claude — Bring Your Own Key",
+        ]
+        idx = {"none": 0, "groq": 1, "openai": 2, "anthropic": 3}.get(current, 0)
+    else:
+        provider_options = [
             "None (Rule-based only)",
             "Ollama — Free & Local",
             "Groq — Free Tier (Bring Your Own Key)",
             "OpenAI — Bring Your Own Key",
             "Anthropic Claude — Bring Your Own Key",
-        ],
+        ]
+        idx = {"none": 0, "ollama": 1, "groq": 2, "openai": 3, "anthropic": 4}.get(current, 0)
+
+    provider_choice = st.radio(
+        "Select AI Provider",
+        options=provider_options,
         index=idx,
     )
 
