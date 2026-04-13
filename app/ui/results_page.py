@@ -2,6 +2,7 @@
 Results page — displays score, keyword analysis, warnings, recommendations, and LLM info.
 """
 
+import html as html_mod
 from typing import Optional
 
 import streamlit as st
@@ -309,7 +310,7 @@ def render_results(
                 chips = " ".join(
                     f'<span style="background:#166534; color:#4ade80; border-radius:20px;'
                     f' padding:2px 10px; font-size:12px; margin:2px; display:inline-block;">'
-                    f'{k}</span>'
+                    f'{html_mod.escape(k)}</span>'
                     for k in keyword_match.matched_keywords[:30]
                 )
                 st.markdown(chips, unsafe_allow_html=True)
@@ -322,7 +323,7 @@ def render_results(
                 chips = " ".join(
                     f'<span style="background:#7c1d1d; color:#fca5a5; border-radius:20px;'
                     f' padding:2px 10px; font-size:12px; margin:2px; display:inline-block;">'
-                    f'{k}</span>'
+                    f'{html_mod.escape(k)}</span>'
                     for k in keyword_match.critical_missing
                 )
                 st.markdown(chips, unsafe_allow_html=True)
@@ -331,7 +332,7 @@ def render_results(
                 chips = " ".join(
                     f'<span style="background:#1e293b; color:#94a3b8; border:1px solid #334155;'
                     f' border-radius:20px; padding:2px 10px; font-size:12px; margin:2px;'
-                    f' display:inline-block;">{k}</span>'
+                    f' display:inline-block;">{html_mod.escape(k)}</span>'
                     for k in keyword_match.missing_keywords[:15]
                 )
                 st.markdown(chips, unsafe_allow_html=True)
