@@ -1,5 +1,6 @@
 """
-AI Settings page — lets users switch between rule-based, Ollama, and OpenAI modes.
+AI Settings page — lets users switch between rule-based and cloud AI modes.
+On hosted deployments (IS_HOSTED=True) Ollama is hidden; it requires a local server.
 """
 
 import streamlit as st
