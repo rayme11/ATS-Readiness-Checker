@@ -740,6 +740,40 @@ resume between the "Submit" button and a recruiter's inbox.
 
 ---
 
+### References & Further Reading
+
+The claims in this README are grounded in published research and industry reporting.
+The sources below are a good starting point if you want to go deeper.
+
+#### Research & reports
+
+| Source | What it covers |
+|---|---|
+| Fuller, J. & Raman, M. (2021). [**Hidden Workers: Untapped Talent**](https://www.hbs.edu/managing-the-future-of-work/Pages/research.aspx). Harvard Business School / Accenture. | Found that ATS filters discard millions of qualified candidates; documents how keyword-gating works in practice. Widely cited in policy and HR circles. |
+| Bogen, M. & Rieke, A. (2018). [**Help Wanted: An Examination of Hiring Algorithms, Equity, and Bias**](https://upturn.org/work/help-wanted/). Upturn. | Audits how automated screening tools — including ATS — encode bias into hiring pipelines. Explains the scoring mechanism in plain language. |
+| Raghavan, M. et al. (2020). [**Mitigating Bias in Algorithmic Hiring**](https://dl.acm.org/doi/10.1145/3351095.3372828). *ACM FAccT 2020*. | Peer-reviewed. Analyses automated screening models including keyword-based ATS, algorithmic ranking, and fairness implications. |
+| Sanchez-Monedero, J. et al. (2020). [**What Does It Mean to "Solve" the Problem of Discrimination in Hiring?**](https://dl.acm.org/doi/10.1145/3351095.3372849). *ACM FAccT 2020*. | Peer-reviewed. Shows that resume-parsing tools reduce resumes to term-frequency vectors — reinforcing the "keyword matching at its core" framing. |
+| SHRM. [**Using AI in HR & Recruiting**](https://www.shrm.org/topics-tools/topics/artificial-intelligence). Society for Human Resource Management. | Practitioner-focused; explains how HR departments configure and use ATS tools day-to-day. |
+
+#### How ATS parsing actually works (technical)
+
+These academic papers focus on the NLP and information-extraction techniques that
+commercial ATS vendors use internally:
+
+- **Resume Entity Extraction / NER** — Search Google Scholar:
+  [`"resume parsing" NLP named entity recognition`](https://scholar.google.com/scholar?q=resume+parsing+NLP+named+entity+recognition)
+- **Job–Resume Matching** — Search Google Scholar:
+  [`"job description resume matching" relevance ranking`](https://scholar.google.com/scholar?q=job+description+resume+matching+relevance+ranking)
+- **Automated Candidate Screening** — Search Google Scholar:
+  [`"applicant tracking system" keyword screening algorithm`](https://scholar.google.com/scholar?q=applicant+tracking+system+keyword+screening+algorithm)
+
+> The short version: most resume-parsing engines apply rule-based NER to extract
+> structured fields (name, email, skills, titles, dates), then compute term-frequency
+> overlap between resume tokens and JD tokens to produce a ranking score.
+> That is exactly what this project implements — openly and without a paywall.
+
+---
+
 ## Author
 
 Built by [Ray Maldonado](https://www.linkedin.com/in/rmaldonado)  
